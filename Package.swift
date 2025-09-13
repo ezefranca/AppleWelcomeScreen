@@ -1,10 +1,10 @@
-// swift-tools-version:5.2
+// swift-tools-version:5.9
 
 import PackageDescription
 
 let package = Package(
     name: "AppleWelcomeScreen",
-    platforms: [.iOS("11.0")],
+    platforms: [.iOS("26.0")],
     products: [
     	.library(name: "AppleWelcomeScreen", targets: ["AppleWelcomeScreen"]),
     ],

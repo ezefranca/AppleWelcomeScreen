@@ -104,31 +104,66 @@ public class WelcomeScreenViewController: UIViewController {
 
         let continueButton = UIButton()
         continueButton.setTitle(self.configuration.continueButton.title, for: .normal)
-        continueButton.setTitleColor(self.configuration.continueButton.titleColor, for: .normal)
+        // Ensure strong, opaque title color for glass
+        let titleColor = self.configuration.continueButton.titleColor
+        let resolvedTitleColor: UIColor = titleColor.cgColor.alpha >= 0.95 ? titleColor : .white
+        continueButton.setTitleColor(resolvedTitleColor, for: .normal)
+        continueButton.setTitleColor(resolvedTitleColor, for: .highlighted)
         continueButton.addTarget(self, action: #selector(self.continueButtonTouchDown(_:)), for: .touchDown)
         continueButton.addTarget(self, action: #selector(self.continueButtonTouchUpOutside(_:)), for: .touchUpOutside)
         continueButton.addTarget(self, action: #selector(self.continueButtonTouchUpInside(_:)), for: .touchUpInside)
         continueButton.addTarget(self, action: #selector(self.continueButtonTouchCancel(_:)), for: .touchCancel)
         continueButton.clipsToBounds = true
         continueButton.layer.masksToBounds = true
-        continueButton.layer.cornerRadius = 16
-        continueButton.backgroundColor = self.view.tintColor
-        continueButton.titleLabel!.font = .preferredFont(for: .body, weight: .semibold)
-        continueButtonContainer.addSubview(continueButton)
-        continueButton.translatesAutoresizingMaskIntoConstraints = false
+
+        // Create glass container with blur and overlays
+        let glassContainer = UIView()
+        glassContainer.clipsToBounds = true
+        glassContainer.layer.masksToBounds = true
+        glassContainer.layer.cornerRadius = 16
+        glassContainer.layer.shadowColor = UIColor.black.cgColor
+        glassContainer.layer.shadowOpacity = 0.08
+        glassContainer.layer.shadowRadius = 10
+        glassContainer.layer.shadowOffset = CGSize(width: 0, height: 6)
+
+        let glass = UIGlassEffect(style: .regular)
+        glass.isInteractive = true
+        glass.tintColor = self.view.tintColor
+        let effectView = UIVisualEffectView(effect: glass)
+        effectView.translatesAutoresizingMaskIntoConstraints = false
+        glassContainer.addSubview(effectView)
+
+        continueButtonContainer.addSubview(glassContainer)
+        glassContainer.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            continueButton.topAnchor.constraint(equalTo: continueButtonContainer.topAnchor),
-            continueButton.bottomAnchor.constraint(equalTo: continueButtonContainer.bottomAnchor),
-            continueButton.leadingAnchor.constraint(equalTo: continueButtonContainer.leadingAnchor),
-            continueButton.trailingAnchor.constraint(equalTo: continueButtonContainer.trailingAnchor),
-            continueButton.titleLabel!.topAnchor.constraint(equalTo: continueButton.topAnchor, constant: 16),
-            continueButton.titleLabel!.bottomAnchor.constraint(equalTo: continueButton.bottomAnchor, constant: -16),
+            glassContainer.topAnchor.constraint(equalTo: continueButtonContainer.topAnchor),
+            glassContainer.bottomAnchor.constraint(equalTo: continueButtonContainer.bottomAnchor),
+            glassContainer.leadingAnchor.constraint(equalTo: continueButtonContainer.leadingAnchor),
+            glassContainer.trailingAnchor.constraint(equalTo: continueButtonContainer.trailingAnchor),
+        ])
+
+        glassContainer.addSubview(continueButton)
+        continueButton.translatesAutoresizingMaskIntoConstraints = false
+
+        NSLayoutConstraint.activate([
+            effectView.topAnchor.constraint(equalTo: glassContainer.topAnchor),
+            effectView.bottomAnchor.constraint(equalTo: glassContainer.bottomAnchor),
+            effectView.leadingAnchor.constraint(equalTo: glassContainer.leadingAnchor),
+            effectView.trailingAnchor.constraint(equalTo: glassContainer.trailingAnchor),
+
+            continueButton.topAnchor.constraint(equalTo: glassContainer.topAnchor),
+            continueButton.bottomAnchor.constraint(equalTo: glassContainer.bottomAnchor),
+            continueButton.leadingAnchor.constraint(equalTo: glassContainer.leadingAnchor),
+            continueButton.trailingAnchor.constraint(equalTo: glassContainer.trailingAnchor),
+
+            continueButton.titleLabel!.topAnchor.constraint(equalTo: glassContainer.topAnchor, constant: 16),
+            continueButton.titleLabel!.bottomAnchor.constraint(equalTo: glassContainer.bottomAnchor, constant: -16),
         ])
     }
 
     @objc private func continueButtonTouchDown(_ continueButton: UIButton) {
-        UIView.animate(withDuration: 0.25) {
-            continueButton.layer.opacity = 0.75
+        UIView.animate(withDuration: 0.12, delay: 0, options: [.curveEaseOut]) {
+            continueButton.superview?.transform = CGAffineTransform(scaleX: 0.98, y: 0.98)
         }
     }
 
@@ -147,8 +182,8 @@ public class WelcomeScreenViewController: UIViewController {
     }
 
     private func resetContinueButton(_ continueButton: UIButton) {
-        UIView.animate(withDuration: 0.25) {
-            continueButton.layer.opacity = 1.0
+        UIView.animate(withDuration: 0.18, delay: 0, options: [.curveEaseOut]) {
+            continueButton.superview?.transform = .identity
         }
     }
 }
